@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title> wow. </title>
+		<style>
+			body {
+				background-image: url("concrete.jpg");
+				background-repeat: repeat;
+				color:white;
+			}
+			
+			#optionPanel {
+				width: 75%;
+				float: left;
+			}
+			
+			div.partOptions {
+				border-style:solid none solid none; 
+				border-width:1px;
+				float: left;
+				width: 100%;
+			}
+			div.styleOptions {
+				border-style:none solid none none; 
+				border-width:1px;
+				padding-left:5px;
+				padding-right:20px;
+				float: left;
+				background-color: #60A917;
+			}
+		
+			div.frameBox {
+				padding-left:5px;
+				padding-right:20px;
+				background-color: #1BA1E2;
+				float: left;
+			}
+			
+			div.frameBoxSingle {
+			}
+			
+			input.textFrames {
+				width: 50px;
+			}
+			
+
+			
+			
+		</style>
+		<script>
+			//TODO RIGHT NOW READ THIS JUST READ THIS: You need to add another div that holds the frames and the style options together
+		
+			//SCROLL DOWN PAST THIS STUFF
+			Array.prototype.clone = function() { //RAD style http://stackoverflow.com/questions/2294703/multidimensional-array-cloning-using-javascript
+				var arr = this.slice(0);
+				for( var i = 0; i < this.length; i++ ) {
+					if( this[i].clone ) {
+						//recursion
+						arr[i] = this[i].clone();
+					}
+				}
+				return arr;
+			}
+			
+			var four = { 				
+		
+				rotatePoint : function(angle, x, y, pivotx, pivoty){ //Takes a list of points with lists of x,y values inside. THIS IS DIFFERENT TO MY OTHER ONE IN THAT IT DOESN'T OVERWRITE THE POINTS
+				//http://en.wikipedia.org/wiki/Rotation_matrix#In_two_dimensions
+					newX = pivotx + (x - pivotx) * Math.cos(-angle) + (y - pivoty) * Math.sin(-angle); //I think the computer takes radians as already multiplied by PI
+					newY = pivoty + (x - pivotx) * -Math.sin(-angle) + (y - pivoty) * Math.cos(-angle);
+					return [newX, newY];
+				},
+				
+				
+				drawFrame: function(animation, animationTick, angle, pivotx, pivoty){ //array contains parts (objects) containing properties for color, stroke, fill, list of points
+					//animation is an array of objects/parts that have their own properties. The parts contain their own frames and for now things like colour switching won't be available for each frame,
+					//just each part
+					//This does not manage what tick it is up to and whether it should change to something else. I thought that would be best from the actual object because you can't change the animation
+					//at this point
+					for(var i = 0; i<animation.parts.length; i++){
+						var part = animation.parts[i]; //There could be many parts to a single object
+						//Part is object containing drawTypes and frames
+						
+						//Frame is an array of points for a frame
+						var frame = part.points[animationTick];
+						
+						//Making the shape points relative to the object position. Have to do this here so it happens each frame. The original points aren't changed.
+						var newPoints = [];
+						for(var k=0;k<frame.length;k++){
+								var x = frame[k][0] + pivotx; 
+								var y = frame[k][1] + pivoty;
+								newPoints.push(four.rotatePoint(angle, x, y, pivotx, pivoty));
+						}
+						ctx.beginPath();
+						ctx.moveTo(newPoints[0][0], newPoints[0][1]);
+						for(var j=1; j<newPoints.length; j++){
+								ctx.lineTo(newPoints[j][0], newPoints[j][1]); //pivotx and pivoty put the shape relative to the position
+						}
+						ctx.closePath();
+						
+						
+						if (part.fill === true){
+							ctx.shadowBlur = part.shadowBlur;
+							ctx.shadowColor = part.blurColor;
+							ctx.fillStyle = part.fillStyle;
+							ctx.shadowBlur = part.shadowBlur * globalShadowBlur;
+							ctx.shadowColor = part.shadowColor;
+							ctx.fill();
+							
+						}
+						
+						if (part.stroke === true){
+							ctx.strokeStyle = part.strokeStyle;
+							ctx.lineWidth = part.lineWidth;
+							ctx.stroke();
+						}
+
+					}
+				}
+				
+			};
+
+			//Now because drawFrame won't know what the time/frame is for a particular object, as it would need to hold data for object requestion animation, the object must keep up with its own frames
+
+
+			//To set an object up for this you must give the object a few arrays of different animations to send to the function from the obj.
+			//The animations/animationParts have objects that need to be rendered inside. The objects to be rendered contain properties of stroke colour, fill colour, etc. The parts also contains the frames.
+			//Which frame is dependent on the frame number sent to the function.
+
+		
+		//KEEP SCROLLING
+
+		
+		
+		//START READING HERE:
+				
+				//Each object is made using a path. The path makes the shape of the object.
+				
+				//So what you've got is some sort of animation engine used to make, well, animations. The animations are basically just made moving the points for an object each frame
+				
+				//THIS IS WHERE YOU CAN MAKE THE THINGS!
+				
+				//! Okay, so, you have these things called animations. "normal", a bit further down, is an example of one. Inside you have a thing called body.
+				//! The body is just a certain piece of the object. I gave it that name to represent the body of the drawing.
+				//! Every piece of the object, such as guns, body and thrusters have to be drawn in their own way. An animation may have a head to draw, a body to draw, or even an ear to draw. 
+				//! The reason that I broke it up into parts is because each part may have its own colour and want to be drawn its own way. In each part you can specify colours, 
+				//! if you want to fill or not, stroke width etc. Now, the "points" part is where the points of the animation are. The numbers are coordinates for a path to draw. 
+				//! The number on the left inside the [] is the X distance across on the screen (left to right), the right is the Y on the screen (up to down). So top left of the screen would be coordinate 0,0 and 			
+				//! bottom right could be coordinate 800,800 if you had a square 800 X 800 screen.
+				
+				
+				//The game will go through the animation at 30 Fps. You might want to copy and paste a bit. You don't need 30FPS detail if you don't want to. Just make frame 1,2 the same 3,4 the same 4,5 the same, etc, and you will have 15FPS (good enough!)
+				//Create animations here!
+				
+			//Note to self: There should be an add frame button
+			//WINDOW PARTS
+			
+			function addFrame(){
+				model.newAnimation.fakeFramesJustForTheNodesUntilICanGetThisSortedSoItWontRenderNonExistantFrames += 1;
+			}
+			
+			function updateParts(){ //Updates the drawing specifications (not yet frames) of all parts in newAnimation
+				for (var i = 0; i < model.newAnimation.parts.length; i++){
+					var part = model.newAnimation.parts[i];
+					
+					//FILLING
+					//Means blur becomes active
+					if (part.styleNodes[0].checked === true){ //If fill
+						part.fill = true;
+						if (part.styleNodes[1].checked === true){ //If primary color
+							part.fillStyle = model.color; //No hash here
+						}else{
+							part.fillStyle = "#"+part.styleNodes[2].value; // Null or empty seems to be transparent. Hmm.
+						}			
+					}else{
+						part.fill = false;
+					}
+
+					//OUTLINE
+					if (part.styleNodes[3].checked === true){ //If fill
+						part.stroke = true;
+						part.strokeStyle = "#"+part.styleNodes[4].value;	
+						part.lineWidth = part.styleNodes[5].value; // 0 will not set it off, but will be refused
+					}else{
+						part.stroke = false;
+					}
+					
+					//BLUR
+					part.shadowBlur = part.styleNodes[6].value; // 0 blur size will turn it off
+					part.blurColor = "#"+part.styleNodes[7].value; //Doesn't matter if the colour changes when blurSize is off, really.
+					
+					//Point count
+					//How many point inputs to generate per frameBoxSingle
+					var frameBox = document.createElement( 'div' );
+					frameBox.className = "frameBox";
+	
+					for (var k = 0; k < model.newAnimation.fakeFramesJustForTheNodesUntilICanGetThisSortedSoItWontRenderNonExistantFrames; k++){ //Foreach frame
+						console.log(k);
+					//Make sure you let it fill the boxes with the current points made
+					//Tell the user to save the points before adding more frames - Actually, points should be saved with update and then recreated underneath
+					
+						//frameBoxSingle is per frame line
+						var frameBoxSingle = document.createElement( 'div' ); //Recreating the frame box is easiest because it has to adapt to the point count
+						frameBoxSingle.className = "frameBoxSingle"; //This div is per frame. Goes horizontal with all the points.
+						var frameNo = k + 1; // couldn't have it below or it would add k + 1 as (kvalue)1
+						var frameBoxSingleLabel = document.createTextNode("Frame "+ frameNo +": ");			
+						frameBoxSingle.appendChild(frameBoxSingleLabel);
+					
+						for (var j = 0; j < part.styleNodes[8].value; j++){	//Foreach XY point
+							var frameInputX = document.createElement( "input" );
+							var frameInputY = document.createElement( "input" );
+							frameInputX.setAttribute('type', 'text');
+							frameInputY.setAttribute('type', 'text');
+							frameInputX.className = "textFrames";
+							frameInputY.className = "textFrames";
+							var frameInputXLabel = document.createTextNode('X: ');
+							var frameInputYLabel = document.createTextNode('Y: '); //Manual padding and it doesn't accept lots of spaces
+							//part.frameNodes.push([frameInputX.value, frameInputY.value]) //Pushes number in there. Should return null on first?
+							frameBoxSingle.appendChild(frameInputXLabel);
+							frameBoxSingle.appendChild(frameInputX);
+							frameBoxSingle.appendChild(frameInputYLabel);
+							frameBoxSingle.appendChild(frameInputY);
+						}
+						
+						frameBox.appendChild(frameBoxSingle);
+						
+					}
+
+					while (part.frameBox) { //This loops through all frameBox elements. As long as only frameBoxSingle is added, it should be fine. It means - Remove all elements from part.frameBox
+						part.frameBox.removeChild(part.frameBox.frameBoxSingle);
+					} //All frames should be removed
+					part.partOptions.appendChild(frameBox);
+					part.frameBox = frameBox; //Just for reference (maybe copy) to delete things
+					//I tried replacing it by ID before but it didn't work.
+				}
+			}
+			
+			function addPart(){
+				model.newAnimation.parts.push(new partForBody());
+				var lastPartIndex = model.newAnimation.parts.length-1; //This feels like an odd way to do it, getting the index and not the object or creating the object first
+				
+				//No frame box here because it needs to get replaced each time it's updated
+				
+				
+				//Fill toggle
+				var fillToggleLabel = document.createTextNode('Fill: ');
+				var fillToggle = document.createElement( "input" );
+				fillToggle.setAttribute('type', 'checkbox');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(fillToggle); //Who cares about the label?
+				
+				//Fill Primary Color toggle
+				var fillPrimaryColorToggleLabel = document.createTextNode('Fill with primary colour: ');
+				var fillPrimaryColorToggle = document.createElement( "input" );
+				fillPrimaryColorToggle.setAttribute('type', 'checkbox');	
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(fillPrimaryColorToggle);
+				
+				//Fill color
+				var partFillColorLabel = document.createTextNode('Fill colour: #');
+				var partFillColor = document.createElement( "input" );
+				partFillColor.setAttribute('type', 'text');	
+				partFillColor.setAttribute('maxlength', '6');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partFillColor);
+				
+				//Outline toggle				
+				var partOutlineToggleLabel = document.createTextNode('Outline: ');
+				var partOutlineToggle = document.createElement( "input" );
+				partOutlineToggle.setAttribute('type', 'checkbox');	
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partOutlineToggle); //I need this further than just in the html to block the input so when it compiles it doesn't get null or whatever
+				
+				//Outline color
+				var partOutlineColorLabel = document.createTextNode('Outline colour: #');
+				var partOutlineColor = document.createElement( "input" );
+				partOutlineColor.setAttribute('type', 'text');	
+				partOutlineColor.setAttribute('maxlength', '6');	
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partOutlineColor);
+				
+				//Outline width
+				var partOutlineWidthLabel = document.createTextNode('Outline width: ');
+				var partOutlineWidth = document.createElement( "input" );
+				partOutlineWidth.setAttribute('type', 'text');	
+				partOutlineWidth.setAttribute('maxlength', '4');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partOutlineWidth);
+				
+				//Blur size
+				var partBlurSizeLabel = document.createTextNode('Blur size: ');
+				var partBlurSize = document.createElement( "input" );
+				partBlurSize.setAttribute('type', 'text');	
+				partBlurSize.setAttribute('maxlength', '3');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partBlurSize);
+				
+				//Blur Color
+				var partBlurColorLabel = document.createTextNode('Blur colour: #');
+				var partBlurColor = document.createElement( "input" );
+				partBlurColor.setAttribute('type', 'text');	
+				partBlurColor.setAttribute('maxlength', '6');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partBlurColor);
+				
+				//Point Count
+				var partPointCountLabel = document.createTextNode('Amount of points: ');
+				var partPointCount = document.createElement( "input" );
+				partPointCount.setAttribute('type', 'text');	
+				partPointCount.setAttribute('maxlength', '1');
+				model.newAnimation.parts[lastPartIndex].styleNodes.push(partPointCount);
+				
+				var divey = document.createElement( 'div' ); //I'm not pushing this element onto the part because it's not so useful
+				divey.className = "styleOptions";
+				
+				divey.appendChild(fillToggleLabel);
+				divey.appendChild(fillToggle);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(fillPrimaryColorToggleLabel);
+				divey.appendChild(fillPrimaryColorToggle);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partFillColorLabel);
+				divey.appendChild(partFillColor);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partOutlineToggleLabel);
+				divey.appendChild(partOutlineToggle);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partOutlineColorLabel);
+				divey.appendChild(partOutlineColor);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partOutlineWidthLabel);
+				divey.appendChild(partOutlineWidth);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partBlurSizeLabel);
+				divey.appendChild(partBlurSize);
+				
+				divey.appendChild(document.createElement("br"));
+				
+				divey.appendChild(partBlurColorLabel);
+				divey.appendChild(partBlurColor);
+				
+				divey.appendChild(document.createElement("br"));	
+				
+				divey.appendChild(partPointCountLabel);
+				divey.appendChild(partPointCount);
+				
+				var partOptions = document.createElement( 'div' );
+				partOptions.className = "partOptions";
+				
+				partOptions.appendChild( divey );
+				
+				//Give it an empty frameBox to change each time it's updated
+				//model.newAnimation.parts[lastPartIndex].frameBox = document.createElement( 'div' );
+				//model.newAnimation.parts[lastPartIndex].frameBox.className = "frameBox";
+				
+				//partOptions.appendChild( model.newAnimation.parts[lastPartIndex].frameBox );
+				
+				model.newAnimation.parts[lastPartIndex].partOptions = partOptions; //Need to keep a reference to readd frameBox
+				var optionPanel = document.getElementById( 'optionPanel' );
+				optionPanel.appendChild( partOptions );
+			
+				
+			}
+			
+			//Maybe some info I might need for my major: Looking at what innerHTML was vs this. This was apparently better. Trying to learn this.
+			
+			//////////////////////////////////////////////////////////////////////////////////////////// Constructors
+			////////////////////////////////////////////////////////////////////////////////////////////
+			
+			function partForBody(){
+				//Give it a default look to be drawn right away
+				this.points = [
+					
+						//frame 1
+						[ //Just an array of frames, not like point1, point2, etc. This way I don't have to think about updating all the time. 
+						//Hopefully the points update whenever they are referenced
+						[0, -50], //Each point like this. These are relative to the pivot point that's sent. I used to have it just like [this.posx-15, this.posy-10] but it didn't update each frame and created a glitch
+						[50, 0],
+						[0, 50],
+						[-50, 0]
+						]//Add a comma here to add more frames and one at the end of the line above to add more points		
+					
+					],	
+				this.fill = true;
+				this.styleNodes = [];
+				this.frameNodes = [];
+				this.fillStyle = "rgb(255,0,0)";
+				this.stroke = true; //Keep this true if you want it to have the outline that default outline everything else has or hasn't
+				this.strokeStyle = "rgb(255,255,255)";	
+				this.lineWidth = 1;	
+				this.shadowBlur = 5; //Size of blur. This can be turned off with global blur. 
+				this.blurColor = "rgb(255,0,0)";
+			}
+			
+		
+		
+		
+		//Some planning space - Give things a primary color like in age of empires. Just leave it as this.color.
+		//This just creates a single animation at a time
+		//Remember the privatise all of the .this to var
+		</script>
+	</head>
+	<body>
+		<button type="button" id="buttonAddPart" onclick="addPart()">Add part</button>	
+		<button type="button" id="buttonUpdate" onclick="updateParts()">Update</button>	
+		<button type="button" id="buttonAddFrame" onclick="addFrame()">Add frame</button>	
+		<div id="container" style="width:100%">	
+			<div id="optionPanel"></div>
+			<canvas id="myCanvas" width="300px" height="300px" style="border: 1px solid #FFFFFF; float:right;"></canvas>
+			<script>
+					var canvas = document.getElementById("myCanvas");
+									
+					var ctx = canvas.getContext("2d");
+					globalShadowBlur = 1; //Shadow blurs on or off
+					ctx.fillStyle = "#FF0000";
+					
+					//MODEL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					model = {
+						faceAngle : 0,
+						color : "rgb(255,0,0)",//Primary color
+						posx : canvas.width/2,
+						posy : canvas.height/2,
+						animationTick : -1, //It will start at -1 because it hasn't ticked yet to go onto the frame of what it's meant to draw. Frame 0 is a frame. Before a clock does its first tick its at 0. Now because the first of an array is 0, the before first is -1
+						newAnimation : { //This is the new animation for building in the current session
+							frames : 1, //Make this the amount of frames to draw
+							fakeFramesJustForTheNodesUntilICanGetThisSortedSoItWontRenderNonExistantFrames: 1,
+							parts : []  //The parts to iterate through to render
+						}
+					}
+					
+					model.currentAnimation = model.newAnimation; //Hopefully it's not duplicating
+
+					model.draw = function() {
+						model.animationTick += 1; //Tick before drawing cause that makes more sense to draw on the certain tick
+						if (model.animationTick > model.currentAnimation.frames-1){ 
+							model.currentAnimation = model.newAnimation; //When animations are done they will always reset to the default position.
+							model.animationTick = -1; //DO NOT FORGET TO RESET EVER. -1 is the state where is hasn't ever ticked
+							model.animationTick += 1; //Because it will still have to draw something in a moment
+						}
+						four.drawFrame(model.currentAnimation, model.animationTick, model.faceAngle, model.posx, model.posy); //This is where it sends the animation block to the thing to draw it
+					};
+					
+					function runGame() {
+					
+						ctx.shadowBlur = 0;
+						ctx.fillStyle = "rgba(0,0,0,1)"; //no motion blur atm cause bugs
+						ctx.fillRect(0, 0, canvas.width, canvas.height);
+						
+						
+						model.draw();
+					}
+
+					window.onload = function() {
+						//This code underneath has redundancy I think
+						setInterval(function() {runGame()}, 1000 / 30); //1000/30 is like 1000 milliseconds divided by 30 to give 30 FPS
+					}
+				</script>
+		</div>
+
+	</body>
+</html>

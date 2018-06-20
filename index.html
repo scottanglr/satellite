@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>SATELLITE</title>
+    <style>
+        body {
+            background-image: url("concrete.jpg");
+            background-repeat: repeat;
+            color: #999999;
+            font-family: monospace;
+            padding: 0px;
+            margin: 0px;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -o-user-select: none;
+            overflow-x: hidden;
+        }
+
+        /*
+        #canvasfg {
+            position: relative;
+            top: -705px;
+        }
+
+        #canvasol {
+            position: relative;
+            top: -1410px;
+        }
+        */
+
+        #canvasbg, #canvasfg, #canvasol {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        button {
+            position: absolute;
+            z-index: 10;
+            border: none;
+        }
+
+        img {
+            position: absolute;
+            z-index: 8;
+        }
+
+        .flipped-vertical {
+            -moz-transform: scale(1, -1);
+            -webkit-transform: scale(1, -1);
+            -o-transform: scale(1, -1);
+            -ms-transform: scale(1, -1);
+            transform: scale(1, -1);
+        }
+
+        .flipped-horizontal {
+            -moz-transform: scale(-1, 1);
+            -webkit-transform: scale(-1, 1);
+            -o-transform: scale(-1, 1);
+            -ms-transform: scale(-1, 1);
+            transform: scale(-1, 1);
+        }
+
+        .flipped-vertical-horizontal {
+            -moz-transform: scale(-1, -1);
+            -webkit-transform: scale(-1, -1);
+            -o-transform: scale(-1, -1);
+            -ms-transform: scale(-1, -1);
+            transform: scale(-1, -1);
+        }
+
+        .middle-button {
+            z-index: 9;
+        }
+
+        #fps {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            font-size: 20px;
+            color: white;
+            z-index: 100;
+        }
+
+        #settings-block {
+            position: absolute;
+            top: 105vh;
+            padding: 50px;
+        }
+
+        #settings-block button {
+            position: static !important;
+        }
+
+
+    </style>
+
+    <script src="head.js"></script>
+</head>
+<div id="canvas-group">
+    <canvas id="canvasbg"></canvas> <!--Add a border if you want a 20fps reduction...-->
+    <canvas id="canvasfg" tabindex="0"></canvas>
+    <canvas id="canvasol" tabindex="0"></canvas>
+</div>
+
+<span id="fps"></span>
+
+<button class="touch touch-button middle-button" id="p1-middle-button" hidden></button>
+
+<button class="touch touch-button middle-button" id="p2-middle-button" hidden></button>
+
+<button class="touch touch-button small-button-parts" id="p1-left-button" hidden></button>
+<img src="turnButtonBlue.svg" class="touch small-button-parts flipped-vertical" id="p1-left-button-background" hidden/>
+
+<button class="touch touch-button small-button-parts" id="p1-right-button" hidden></button>
+<img src="turnButtonBlue.svg" class="touch small-button-parts flipped-vertical-horizontal"
+     id="p1-right-button-background" hidden/>
+
+<button class="touch touch-button small-button-parts" id="p2-left-button" hidden></button>
+<img src="turnButtonGreen.svg" class="touch small-button-parts flipped-horizontal" id="p2-left-button-background"
+     hidden/>
+
+<button class="touch touch-button small-button-parts" id="p2-right-button" hidden></button>
+<img src="turnButtonGreen.svg" class="touch small-button-parts" id="p2-right-button-background" hidden/>
+
+<button class="touch touch-button small-button-parts" id="p1-down-button" hidden></button>
+<img src="thrustButtonBlue.svg" class="touch small-button-parts" id="p1-down-button-background" hidden/>
+
+<button class="touch touch-button small-button-parts" id="p1-up-button" hidden></button>
+<img src="thrustButtonBlue.svg" class="touch small-button-parts flipped-vertical" id="p1-up-button-background" hidden/>
+
+<button class="touch touch-button small-button-parts" id="p2-down-button" hidden></button>
+<img src="thrustButtonGreen.svg" class="touch small-button-parts flipped-vertical" id="p2-down-button-background"
+     hidden/>
+
+<button class="touch touch-button small-button-parts" id="p2-up-button" hidden></button>
+<img src="thrustButtonGreen.svg" class="touch small-button-parts" id="p2-up-button-background" hidden/>
+
+<br>
+<script src="body.js"></script>
+<div id="settings-block" style="display: none">
+    <button type="button" id="toggleFullscreen" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+    <button type="button" id="toggleSunButton" onclick="toggleSun()">Toggle Sun</button>
+    <button type="button" id="toggleDefaultGravity" onclick="toggleGravityDirection()">Toggle Gravity Direction</button>
+    <button type="button" id="toggleRenderGlows" onclick="toggleRenderGlows()">Toggle Render Glows</button>
+    <button type="button" id="toggleMotionBlur" onclick="toggleMotionBlur()">Toggle Motion Blur</button>
+    <button type="button" onclick="runGame()">Step -></button>
+    <button type="button" onclick="canvas3.focus()">Focus</button>
+    <button type="button" onclick="p1.deleteSelf();canvas3.focus()">DeleteSelf</button>
+    <button type="button">Unfocus</button>
+    <div>
+        Gravity:
+        <input id="gravitySlider" type="range" min="0" max="13.346" value="6.673" step="0.6673"
+               onchange="gravitySlider(this.value)"/>
+    </div>
+    <div>
+        Motion Blur:
+        <input id="motionBlurSlider" type="range" min="0" max="1" value="0.5" step="0.05"
+               onchange="motionBlurSlider(this.value)"/>
+    </div>
+    <div>
+        Global Time Factor:
+        <input id="globalTimeFactorSlider" type="range" min="0" max="1" value="0.1" step="0.01"
+               onchange="globalTimeFactorSlider(this.value)"/>
+    </div>
+    <div>
+        Trajectory Distance:
+        <input id="globalTrajectoryDistanceSlider" type="range" min="200" max="10000" value="2000" step="100"
+               onchange="globalTrajectoryDistanceSlider(this.value)"/>
+    </div>
+    <div>
+        Trajectory Points
+        <input id="globalTrajectoryPointsSlider" type="range" min="3" max="300" value="45" step="1"
+               onchange="globalTrajectoryPointsSlider(this.value)"/>
+    </div>
+    <br>
+    <br>
+    <!--<table border="1" id="varTable">
+    <tr>
+    <th>Point 1</th>
+    <th>faceAngle</th>
+    <th>velocityAngle</th>
+    </tr>
+    <tr>
+    <td>row 1, cell 1</td>
+    <td>row 1, cell 2</td>
+    <td>row 1, cell 3</td>
+    </tr>
+    <tr>
+    <td>row 2, cell 1</td>
+    <td>row 2, cell 2</td>
+    <td>row 2, cell 3</td>
+    </tr>
+    </table>
+    -->
+    <br>
+    <p>If you click outside the game window it will pause, click the focus button to unpause.</p>
+    <div>UP/LEFT/RIGHT/DOWN/J/K for player 1</div>
+    <div>W/A/S/D/X/C for player 2. Press enter to restart the game</div>
+    <div>Click to create a new mass object</div>
+    <br>
+
+</div>
+</body>
+
+</html>
