@@ -1,6 +1,3 @@
-/**
- * Created by Scott on 12/04/2015.
- */
 //Credit to Joe (Distant hipster) for some pretty sweet graphics
 
 var four = {
